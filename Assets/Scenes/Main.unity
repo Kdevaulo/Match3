@@ -452,6 +452,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _chipsContainer: {fileID: 377758591}
+  _chipSettings: {fileID: 11400000, guid: 489a47d6263fe164c87ede8dc0650dda, type: 2}
   _gridSettings: {fileID: 11400000, guid: 23499bfe6b3e4b04a83b99538dd62f67, type: 2}
 --- !u!4 &1638679545
 Transform:
