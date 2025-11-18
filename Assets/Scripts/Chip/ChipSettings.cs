@@ -2,6 +2,8 @@
 
 using UnityEngine;
 
+using Random = UnityEngine.Random;
+
 namespace Kdevaulo.Match3
 {
     [Serializable]
@@ -24,7 +26,7 @@ namespace Kdevaulo.Match3
             if (_chips == null || _chips.Length == 0)
                 return Chip.None;
 
-            int index = UnityEngine.Random.Range(0, _chips.Length);
+            var index = Random.Range(0, _chips.Length);
             return _chips[index].Type;
         }
 
@@ -33,7 +35,7 @@ namespace Kdevaulo.Match3
             if (_chips == null)
                 return null;
 
-            for (int i = 0; i < _chips.Length; i++)
+            for (var i = 0; i < _chips.Length; i++)
             {
                 if (_chips[i].Type == type)
                     return _chips[i].Sprite;

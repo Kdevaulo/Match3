@@ -7,17 +7,20 @@ namespace Kdevaulo.Match3
         private readonly RectTransform _chipsContainer;
         private readonly GridSettings _gridSettings;
         private readonly ChipSettings _chipsSettings;
+        private readonly GridModel _gridModel;
 
-        private ChipView[,] _chipViews;
+        private ChipView[,] _chipViewColection;
 
-        public ChipController(RectTransform chipsContainer, GridSettings gridSettings, ChipSettings chipsSettings)
+        public ChipController(RectTransform chipsContainer, GridSettings gridSettings, ChipSettings chipsSettings,
+            GridModel gridModel)
         {
             _chipsContainer = chipsContainer;
-            _gridSettings = gridSettings;
             _chipsSettings = chipsSettings;
+            _gridSettings = gridSettings;
+            _gridModel = gridModel;
 
             var gridSize = _gridSettings.GridSize;
-            _chipViews = new ChipView[gridSize.x, gridSize.y];
+            _chipViewColection = new ChipView[gridSize.x, gridSize.y];
         }
 
         public void SpawnGrid()
@@ -33,12 +36,12 @@ namespace Kdevaulo.Match3
             var startX = -totalWidth * 0.5f + cellSize * 0.5f;
             var startY = -totalHeight * 0.5f + cellSize * 0.5f;
 
-            for (int x = 0; x < gridSize.x; x++)
+            for (var x = 0; x < gridSize.x; x++)
             {
-                for (int y = 0; y < gridSize.y; y++)
+                for (var y = 0; y < gridSize.y; y++)
                 {
                     var chip = Object.Instantiate(_chipsSettings.ChipViewPrefab, _chipsContainer);
-                    _chipViews[x, y] = chip;
+                    _chipViewColection[x, y] = chip;
 
                     var rt = chip.RectTransform;
                     rt.sizeDelta = cellSizeVec;
@@ -49,6 +52,8 @@ namespace Kdevaulo.Match3
                     );
 
                     var type = _chipsSettings.GetRandomType();
+                    _gridModel.SetChip(x, y, type);
+
                     var sprite = _chipsSettings.GetSprite(type);
                     chip.SetSprite(sprite);
                 }
