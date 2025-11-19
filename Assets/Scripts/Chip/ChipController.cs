@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
 
 namespace Kdevaulo.Match3
 {
@@ -9,7 +11,7 @@ namespace Kdevaulo.Match3
         private readonly ChipSettings _chipsSettings;
         private readonly GridModel _gridModel;
 
-        private ChipView[,] _chipViewColection;
+        private ChipView[,] _chipViewCollection;
 
         public ChipController(RectTransform chipsContainer, GridSettings gridSettings, ChipSettings chipsSettings,
             GridModel gridModel)
@@ -20,7 +22,7 @@ namespace Kdevaulo.Match3
             _gridModel = gridModel;
 
             var gridSize = _gridSettings.GridSize;
-            _chipViewColection = new ChipView[gridSize.x, gridSize.y];
+            _chipViewCollection = new ChipView[gridSize.x, gridSize.y];
         }
 
         public void SpawnGrid()
@@ -41,7 +43,7 @@ namespace Kdevaulo.Match3
                 for (var y = 0; y < gridSize.y; y++)
                 {
                     var chip = Object.Instantiate(_chipsSettings.ChipViewPrefab, _chipsContainer);
-                    _chipViewColection[x, y] = chip;
+                    _chipViewCollection[x, y] = chip;
 
                     var rt = chip.RectTransform;
                     rt.sizeDelta = cellSizeVec;
@@ -57,6 +59,38 @@ namespace Kdevaulo.Match3
                     var sprite = _chipsSettings.GetSprite(type);
                     chip.SetSprite(sprite);
                 }
+            }
+        }
+
+        public void HighlightCells(IReadOnlyList<Vector2Int> cells, Color color)
+        {
+            foreach (var cell in cells)
+            {
+                var view = _chipViewCollection[cell.x, cell.y];
+
+                if (view != null)
+                {
+                    view.SetColor(color);
+                }
+            }
+        }
+
+        public void ClearCells(IReadOnlyList<Vector2Int> cells)
+        {
+            foreach (var cell in cells)
+            {
+                var x = cell.x;
+                var y = cell.y;
+
+                var view = _chipViewCollection[x, y];
+
+                if (view != null)
+                {
+                    Object.Destroy(view.gameObject);
+                    _chipViewCollection[x, y] = null;
+                }
+
+                _gridModel.SetChip(x, y, Chip.None);
             }
         }
     }

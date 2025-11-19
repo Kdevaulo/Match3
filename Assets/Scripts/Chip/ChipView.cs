@@ -12,5 +12,10 @@ namespace Kdevaulo.Match3
         {
             _icon.sprite = sprite;
         }
+
+        public void SetColor(Color color)
+        {
+            _icon.color = color;
+        }
     }
 }
