@@ -11,7 +11,7 @@ namespace Kdevaulo.Match3
         private readonly ChipSettings _chipsSettings;
         private readonly GridModel _gridModel;
 
-        private ChipView[,] _chipViewCollection;
+        private readonly ChipView[,] _chipViewCollection;
 
         public ChipController(RectTransform chipsContainer, GridSettings gridSettings, ChipSettings chipsSettings,
             GridModel gridModel)
@@ -28,9 +28,7 @@ namespace Kdevaulo.Match3
         public void SpawnGrid()
         {
             var gridSize = _gridSettings.GridSize;
-
             var cellSize = _gridSettings.CellSize;
-            var cellSizeVec = new Vector2(cellSize, cellSize);
 
             var totalWidth = gridSize.x * cellSize;
             var totalHeight = gridSize.y * cellSize;
@@ -42,22 +40,7 @@ namespace Kdevaulo.Match3
             {
                 for (var y = 0; y < gridSize.y; y++)
                 {
-                    var chip = Object.Instantiate(_chipsSettings.ChipViewPrefab, _chipsContainer);
-                    _chipViewCollection[x, y] = chip;
-
-                    var rt = chip.RectTransform;
-                    rt.sizeDelta = cellSizeVec;
-
-                    rt.anchoredPosition = new Vector2(
-                        startX + x * cellSize,
-                        startY + y * cellSize
-                    );
-
-                    var type = _chipsSettings.GetRandomType();
-                    _gridModel.SetChip(x, y, type);
-
-                    var sprite = _chipsSettings.GetSprite(type);
-                    chip.SetSprite(sprite);
+                    CreateChipView(x, y, cellSize, startX, startY);
                 }
             }
         }
@@ -92,6 +75,87 @@ namespace Kdevaulo.Match3
 
                 _gridModel.SetChip(x, y, Chip.None);
             }
+        }
+
+        public void ApplyGravity()
+        {
+            var gridSize = _gridSettings.GridSize;
+            var width = gridSize.x;
+            var height = gridSize.y;
+
+            var cellSize = _gridSettings.CellSize;
+
+            var totalWidth = width * cellSize;
+            var totalHeight = height * cellSize;
+
+            var startX = -totalWidth * 0.5f + cellSize * 0.5f;
+            var startY = -totalHeight * 0.5f + cellSize * 0.5f;
+
+            for (var x = 0; x < width; x++)
+            {
+                var targetY = 0;
+
+                for (var y = 0; y < height; y++)
+                {
+                    var type = _gridModel.GetChip(x, y);
+
+                    if (type == Chip.None)
+                        continue;
+
+                    MoveChip(x, y, startX, startY, targetY, type, cellSize);
+
+                    targetY++;
+                }
+            }
+        }
+
+        private void MoveChip(int x, int y, float startX, float startY, int targetY, Chip type, float cellSize)
+        {
+            var view = _chipViewCollection[x, y];
+
+            if (y != targetY)
+            {
+                _gridModel.SetChip(x, targetY, type);
+                _gridModel.SetChip(x, y, Chip.None);
+
+                _chipViewCollection[x, targetY] = view;
+                _chipViewCollection[x, y] = null;
+
+                if (view != null)
+                {
+                    MoveChipDown(view.RectTransform, startX, x, cellSize, startY, targetY);
+                }
+            }
+        }
+
+        private void CreateChipView(int x, int y, float cellSize, float startX, float startY)
+        {
+            var cellSizeVec = new Vector2(cellSize, cellSize);
+
+            var chip = Object.Instantiate(_chipsSettings.ChipViewPrefab, _chipsContainer);
+            _chipViewCollection[x, y] = chip;
+
+            var rt = chip.RectTransform;
+            rt.sizeDelta = cellSizeVec;
+
+            rt.anchoredPosition = new Vector2(
+                startX + x * cellSize,
+                startY + y * cellSize
+            );
+
+            var type = _chipsSettings.GetRandomType();
+            _gridModel.SetChip(x, y, type);
+
+            var sprite = _chipsSettings.GetSprite(type);
+            chip.SetSprite(sprite);
+        }
+
+        private void MoveChipDown(RectTransform rt, float startX, int x, float cellSize, float startY, int targetY)
+        {
+            rt.anchoredPosition = new Vector2(
+                startX + x * cellSize,
+                startY + targetY * cellSize
+            );
         }
     }
 }

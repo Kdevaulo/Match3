@@ -6,15 +6,19 @@ namespace Kdevaulo.Match3
 {
     public class GameLoop
     {
-        private readonly GridModel _gridModel;
-        private readonly MatchFinder _matchFinder;
         private readonly ChipController _chipController;
+        private readonly MatchFinder _matchFinder;
+        private readonly GridModel _gridModel;
+
+        private readonly WaitForSeconds _delay;
 
         public GameLoop(GridModel gridModel, MatchFinder matchFinder, ChipController chipController)
         {
             _gridModel = gridModel;
             _matchFinder = matchFinder;
             _chipController = chipController;
+
+            _delay = new WaitForSeconds(1);
         }
 
         public IEnumerator HandleGameLoop()
@@ -36,12 +40,16 @@ namespace Kdevaulo.Match3
                 _chipController.HighlightCells(cluster.Cells, Color.green);
             }
 
-            yield return new WaitForSeconds(1f);
+            yield return _delay;
 
             foreach (var cluster in matches)
             {
                 _chipController.ClearCells(cluster.Cells);
             }
+
+            yield return _delay;
+
+            _chipController.ApplyGravity();
         }
     }
 }
