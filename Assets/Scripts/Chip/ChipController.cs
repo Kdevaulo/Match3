@@ -41,7 +41,11 @@ namespace Kdevaulo.Match3
             {
                 for (var y = 0; y < gridSize.y; y++)
                 {
-                    CreateChipView(x, y, cellSize, startX, startY);
+                    var position = new Vector2(
+                        CalculatePosition(startX, x, cellSize),
+                        CalculatePosition(startY, y, cellSize));
+
+                    CreateChipView(x, y, cellSize, position);
                 }
             }
         }
@@ -122,21 +126,11 @@ namespace Kdevaulo.Match3
                 {
                     var y = height - emptyCount + i;
 
-                    var chip = Object.Instantiate(_chipsSettings.ChipViewPrefab, _chipsContainer);
-                    _chipViewCollection[x, y] = chip;
+                    var position = new Vector2(
+                        CalculatePosition(startX, x, cellSize),
+                        CalculatePosition(startY, height + 1 + i, cellSize));
 
-                    var rt = chip.RectTransform;
-                    rt.sizeDelta = new Vector2(cellSize, cellSize);
-
-                    var posX = startX + x * cellSize;
-                    var posY = startY + (height + 1 + i) * cellSize;
-                    rt.anchoredPosition = new Vector2(posX, posY);
-
-                    var type = _chipsSettings.GetRandomType();
-                    _gridModel.SetChip(x, y, type);
-
-                    var sprite = _chipsSettings.GetSprite(type);
-                    chip.SetSprite(sprite);
+                    CreateChipView(x, y, cellSize, position);
 
                     _spawnedCells.Add(new Vector2Int(x, y));
                 }
@@ -148,7 +142,7 @@ namespace Kdevaulo.Match3
             if (_spawnedCells.Count == 0)
                 return;
 
-            GetGridGeometry(out _, out _, out var cellSize, out var startX, out var startY);
+            CalculateGridGeometry(out var cellSize, out var startX, out var startY);
 
             foreach (var cell in _spawnedCells)
             {
@@ -173,10 +167,17 @@ namespace Kdevaulo.Match3
             width = gridSize.x;
             height = gridSize.y;
 
+            CalculateGridGeometry(out cellSize, out startX, out startY);
+        }
+
+        private void CalculateGridGeometry(out float cellSize,
+            out float startX, out float startY)
+        {
+            var gridSize = _gridSettings.GridSize;
             cellSize = _gridSettings.CellSize;
 
-            var totalWidth = width * cellSize;
-            var totalHeight = height * cellSize;
+            var totalWidth = gridSize.x * cellSize;
+            var totalHeight = gridSize.y * cellSize;
 
             startX = -totalWidth * 0.5f + cellSize * 0.5f;
             startY = -totalHeight * 0.5f + cellSize * 0.5f;
@@ -201,20 +202,14 @@ namespace Kdevaulo.Match3
             }
         }
 
-        private void CreateChipView(int x, int y, float cellSize, float startX, float startY)
+        private void CreateChipView(int x, int y, float cellSize, Vector2 position)
         {
-            var cellSizeVec = new Vector2(cellSize, cellSize);
-
             var chip = Object.Instantiate(_chipsSettings.ChipViewPrefab, _chipsContainer);
             _chipViewCollection[x, y] = chip;
 
             var rt = chip.RectTransform;
-            rt.sizeDelta = cellSizeVec;
-
-            rt.anchoredPosition = new Vector2(
-                startX + x * cellSize,
-                startY + y * cellSize
-            );
+            rt.sizeDelta = new Vector2(cellSize, cellSize);
+            rt.anchoredPosition = position;
 
             var type = _chipsSettings.GetRandomType();
             _gridModel.SetChip(x, y, type);
@@ -226,9 +221,13 @@ namespace Kdevaulo.Match3
         private void MoveChipDown(RectTransform rt, float startX, int x, float cellSize, float startY, int targetY)
         {
             rt.anchoredPosition = new Vector2(
-                startX + x * cellSize,
-                startY + targetY * cellSize
-            );
+                CalculatePosition(startX, x, cellSize),
+                CalculatePosition(startY, targetY, cellSize));
+        }
+
+        private float CalculatePosition(float startPosition, int count, float size)
+        {
+            return startPosition + count * size;
         }
     }
 }

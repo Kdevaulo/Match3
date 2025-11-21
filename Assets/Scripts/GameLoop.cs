@@ -14,11 +14,11 @@ namespace Kdevaulo.Match3
 
         public GameLoop(GridModel gridModel, MatchFinder matchFinder, ChipController chipController)
         {
-            _gridModel = gridModel;
-            _matchFinder = matchFinder;
             _chipController = chipController;
+            _matchFinder = matchFinder;
+            _gridModel = gridModel;
 
-            _delay = new WaitForSeconds(1);
+            _delay = new WaitForSeconds(0.5f);
         }
 
         public IEnumerator HandleGameLoop()
@@ -32,12 +32,14 @@ namespace Kdevaulo.Match3
         {
             while (true)
             {
-                var matches = _matchFinder.FindMatches(true);
+                var matches = _matchFinder.FindMatches(true); // change to optimize calculation
+
+                _gridModel.ClearDirty();
 
                 if (matches.Count == 0)
                     yield break;
 
-                _gridModel.ClearDirty();
+                yield return _delay;
 
                 foreach (var cluster in matches)
                 {
