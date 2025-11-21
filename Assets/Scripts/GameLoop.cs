@@ -30,26 +30,39 @@ namespace Kdevaulo.Match3
 
         private IEnumerator HandleInitialMatches()
         {
-            var matches = _matchFinder.FindMatches(false);
-
-            if (matches.Count == 0)
-                yield break;
-
-            foreach (var cluster in matches)
+            while (true)
             {
-                _chipController.HighlightCells(cluster.Cells, Color.green);
+                var matches = _matchFinder.FindMatches(true);
+
+                if (matches.Count == 0)
+                    yield break;
+
+                _gridModel.ClearDirty();
+
+                foreach (var cluster in matches)
+                {
+                    _chipController.HighlightCells(cluster.Cells, Color.green);
+                }
+
+                yield return _delay;
+
+                foreach (var cluster in matches)
+                {
+                    _chipController.ClearCells(cluster.Cells);
+                }
+
+                yield return _delay;
+
+                _chipController.ApplyGravity();
+
+                yield return _delay;
+
+                _chipController.SpawnMissingChipsAboveGrid();
+
+                yield return _delay;
+
+                _chipController.MoveSpawnedChipsDown();
             }
-
-            yield return _delay;
-
-            foreach (var cluster in matches)
-            {
-                _chipController.ClearCells(cluster.Cells);
-            }
-
-            yield return _delay;
-
-            _chipController.ApplyGravity();
         }
     }
 }

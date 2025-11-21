@@ -98,15 +98,11 @@ namespace Kdevaulo.Match3
             if (orientation == SegmentOrientation.Horizontal)
             {
                 return new Segment(SegmentOrientation.Horizontal,
-                    type,
-                    start, lineIndex,
-                    end, lineIndex);
+                    type, start, lineIndex, end, lineIndex);
             }
 
             return new Segment(SegmentOrientation.Vertical,
-                type,
-                lineIndex, start,
-                lineIndex, end);
+                type, lineIndex, start, lineIndex, end);
         }
     }
 }

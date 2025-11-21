@@ -12,6 +12,7 @@ namespace Kdevaulo.Match3
         private readonly GridModel _gridModel;
 
         private readonly ChipView[,] _chipViewCollection;
+        private readonly List<Vector2Int> _spawnedCells = new List<Vector2Int>();
 
         public ChipController(RectTransform chipsContainer, GridSettings gridSettings, ChipSettings chipsSettings,
             GridModel gridModel)
@@ -79,17 +80,7 @@ namespace Kdevaulo.Match3
 
         public void ApplyGravity()
         {
-            var gridSize = _gridSettings.GridSize;
-            var width = gridSize.x;
-            var height = gridSize.y;
-
-            var cellSize = _gridSettings.CellSize;
-
-            var totalWidth = width * cellSize;
-            var totalHeight = height * cellSize;
-
-            var startX = -totalWidth * 0.5f + cellSize * 0.5f;
-            var startY = -totalHeight * 0.5f + cellSize * 0.5f;
+            GetGridGeometry(out var width, out var height, out var cellSize, out var startX, out var startY);
 
             for (var x = 0; x < width; x++)
             {
@@ -107,6 +98,88 @@ namespace Kdevaulo.Match3
                     targetY++;
                 }
             }
+        }
+
+        public void SpawnMissingChipsAboveGrid()
+        {
+            _spawnedCells.Clear();
+
+            GetGridGeometry(out var width, out var height, out var cellSize, out var startX, out var startY);
+
+            for (var x = 0; x < width; x++)
+            {
+                var emptyCount = 0;
+
+                for (var y = height - 1; y >= 0; y--)
+                {
+                    if (_gridModel.GetChip(x, y) == Chip.None)
+                        emptyCount++;
+                    else
+                        break;
+                }
+
+                for (var i = 0; i < emptyCount; i++)
+                {
+                    var y = height - emptyCount + i;
+
+                    var chip = Object.Instantiate(_chipsSettings.ChipViewPrefab, _chipsContainer);
+                    _chipViewCollection[x, y] = chip;
+
+                    var rt = chip.RectTransform;
+                    rt.sizeDelta = new Vector2(cellSize, cellSize);
+
+                    var posX = startX + x * cellSize;
+                    var posY = startY + (height + 1 + i) * cellSize;
+                    rt.anchoredPosition = new Vector2(posX, posY);
+
+                    var type = _chipsSettings.GetRandomType();
+                    _gridModel.SetChip(x, y, type);
+
+                    var sprite = _chipsSettings.GetSprite(type);
+                    chip.SetSprite(sprite);
+
+                    _spawnedCells.Add(new Vector2Int(x, y));
+                }
+            }
+        }
+
+        public void MoveSpawnedChipsDown()
+        {
+            if (_spawnedCells.Count == 0)
+                return;
+
+            GetGridGeometry(out _, out _, out var cellSize, out var startX, out var startY);
+
+            foreach (var cell in _spawnedCells)
+            {
+                var x = cell.x;
+                var y = cell.y;
+
+                var view = _chipViewCollection[x, y];
+
+                if (view == null)
+                    continue;
+
+                MoveChipDown(view.RectTransform, startX, x, cellSize, startY, y);
+            }
+
+            _spawnedCells.Clear();
+        }
+
+        private void GetGridGeometry(out int width, out int height, out float cellSize,
+            out float startX, out float startY)
+        {
+            var gridSize = _gridSettings.GridSize;
+            width = gridSize.x;
+            height = gridSize.y;
+
+            cellSize = _gridSettings.CellSize;
+
+            var totalWidth = width * cellSize;
+            var totalHeight = height * cellSize;
+
+            startX = -totalWidth * 0.5f + cellSize * 0.5f;
+            startY = -totalHeight * 0.5f + cellSize * 0.5f;
         }
 
         private void MoveChip(int x, int y, float startX, float startY, int targetY, Chip type, float cellSize)
