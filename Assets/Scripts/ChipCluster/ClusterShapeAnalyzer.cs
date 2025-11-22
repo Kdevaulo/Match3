@@ -103,8 +103,7 @@ namespace Kdevaulo.Match3
         }
 
         private bool IsCross(int left, int right, int up, int down,
-            int horizLen,
-            int vertLen)
+            int horizLen, int vertLen)
         {
             return left > 0 && right > 0 && up > 0 && down > 0 &&
                    horizLen >= MinMatchLength && vertLen >= MinMatchLength;
@@ -117,9 +116,7 @@ namespace Kdevaulo.Match3
         }
 
         private bool IsLShape(int left, int right, int up, int down,
-            int dirs,
-            int horizLen,
-            int vertLen)
+            int dirs, int horizLen, int vertLen)
         {
             if (dirs != 2)
                 return false;

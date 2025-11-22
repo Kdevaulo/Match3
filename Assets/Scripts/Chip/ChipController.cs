@@ -9,20 +9,22 @@ namespace Kdevaulo.Match3
     public class ChipController
     {
         private readonly RectTransform _chipsContainer;
-        private readonly GridSettings _gridSettings;
         private readonly ChipSettings _chipsSettings;
-        private readonly GridModel _gridModel;
+        private readonly GridSettings _gridSettings;
+        private readonly InputBlocker _inputBlocker;
         private readonly GameEventBus _eventBus;
+        private readonly GridModel _gridModel;
 
         private readonly ChipView[,] _chipViewCollection;
         private readonly List<Vector2Int> _spawnedCells = new List<Vector2Int>();
 
         public ChipController(RectTransform chipsContainer, GridSettings gridSettings, ChipSettings chipsSettings,
-            GridModel gridModel, GameEventBus eventBus)
+            GridModel gridModel, GameEventBus eventBus, InputBlocker inputBlocker)
         {
             _chipsContainer = chipsContainer;
             _chipsSettings = chipsSettings;
             _gridSettings = gridSettings;
+            _inputBlocker = inputBlocker;
             _gridModel = gridModel;
             _eventBus = eventBus;
 
@@ -140,6 +142,7 @@ namespace Kdevaulo.Match3
 
                 if (input != null)
                 {
+                    input.Initialize(_inputBlocker);
                     input.SwapRequested += OnSwapRequested;
                 }
 
@@ -189,6 +192,7 @@ namespace Kdevaulo.Match3
 
             if (input != null)
             {
+                input.Initialize(_inputBlocker);
                 input.SwapRequested += OnSwapRequested;
             }
         }

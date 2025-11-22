@@ -10,6 +10,7 @@ namespace Kdevaulo.Match3
 
         private GridRefillHandler _gridRefillHandler;
         private ChipController _chipController;
+        private InputBlocker _inputBlocker;
         private GameEventBus _eventBus;
         private MatchFinder _matchFinder;
         private GridModel _gridModel;
@@ -18,13 +19,16 @@ namespace Kdevaulo.Match3
         private void Awake()
         {
             _gridModel = new GridModel(_gridSettings.GridSize);
-
+            _inputBlocker = new InputBlocker();
             _eventBus = new GameEventBus();
 
-            _chipController = new ChipController(_chipsContainer, _gridSettings, _chipSettings, _gridModel, _eventBus);
+            _chipController = new ChipController(_chipsContainer, _gridSettings, _chipSettings, _gridModel, _eventBus,
+                _inputBlocker);
+
             _matchFinder = new MatchFinder(_gridModel);
             _gridRefillHandler = new GridRefillHandler(_gridModel, _chipSettings);
-            _gameLoop = new GameLoop(_gridModel, _matchFinder, _chipController, _gridRefillHandler, _eventBus);
+            _gameLoop = new GameLoop(_gridModel, _matchFinder, _chipController, _gridRefillHandler, _eventBus,
+                _inputBlocker);
         }
 
         private void Start()

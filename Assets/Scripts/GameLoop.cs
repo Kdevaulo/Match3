@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 
 using UnityEngine;
 
@@ -7,21 +6,23 @@ namespace Kdevaulo.Match3
 {
     public class GameLoop
     {
+        private readonly GridRefillHandler _gridRefillHandler;
         private readonly ChipController _chipController;
+        private readonly InputBlocker _inputBlocker;
+        private readonly GameEventBus _eventBus;
         private readonly MatchFinder _matchFinder;
         private readonly GridModel _gridModel;
-        private readonly GridRefillHandler _gridRefillHandler;
-        private readonly GameEventBus _eventBus;
 
         private readonly WaitForSeconds _delay;
 
         private bool _playerMoveRequested;
 
         public GameLoop(GridModel gridModel, MatchFinder matchFinder, ChipController chipController,
-            GridRefillHandler gridRefillHandler, GameEventBus eventBus)
+            GridRefillHandler gridRefillHandler, GameEventBus eventBus, InputBlocker inputBlocker)
         {
             _gridRefillHandler = gridRefillHandler;
             _chipController = chipController;
+            _inputBlocker = inputBlocker;
             _matchFinder = matchFinder;
             _gridModel = gridModel;
             _eventBus = eventBus;
@@ -33,6 +34,8 @@ namespace Kdevaulo.Match3
 
         public IEnumerator HandleGameLoop()
         {
+            _inputBlocker.SetBlocked(true);
+
             _chipController.SpawnGrid();
 
             yield return HandleMatches(false);
@@ -56,6 +59,8 @@ namespace Kdevaulo.Match3
 
         private IEnumerator HandleMatches(bool checkDirtyOnly)
         {
+            _inputBlocker.SetBlocked(true);
+
             while (true)
             {
                 var matches = _matchFinder.FindMatches(checkDirtyOnly);
@@ -63,7 +68,7 @@ namespace Kdevaulo.Match3
                 _gridModel.ClearDirty();
 
                 if (matches.Count == 0)
-                    yield break;
+                    break;
 
                 yield return _delay;
 
@@ -93,6 +98,8 @@ namespace Kdevaulo.Match3
 
                 _chipController.MoveSpawnedChipsDown();
             }
+
+            _inputBlocker.SetBlocked(false);
         }
     }
 }
