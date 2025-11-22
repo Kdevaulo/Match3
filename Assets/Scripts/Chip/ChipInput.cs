@@ -1,46 +1,23 @@
-﻿using UnityEngine;
+﻿using System;
+
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace Kdevaulo.Match3
 {
     public class ChipInput : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
+        public event Action<ChipInput, Vector2Int> SwapRequested;
+
         [SerializeField] private float _minDragDistance = 20f;
 
-        [SerializeField] private ChipView _chipView;
-
-        private ChipController _chipController;
-        private GridModel _gridModel;
-
         private Vector2 _startScreenPosition;
-
-        private bool _initialized;
         private bool _dragStarted;
-
-        public void Initialize(ChipController chipController, GridModel gridModel)
-        {
-            _chipController = chipController;
-            _gridModel = gridModel;
-            _initialized = true;
-        }
 
         void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
         {
-            _dragStarted = false;
-
-            if (!_initialized || _chipView == null || _gridModel == null)
-                return;
-
-            var cell = _chipView.Cell;
-
-            if (!IsInsideBounds(cell))
-                return;
-
-            if (_gridModel.GetChip(cell.x, cell.y) == Chip.None)
-                return;
-
-            _startScreenPosition = eventData.position;
             _dragStarted = true;
+            _startScreenPosition = eventData.position;
         }
 
         void IDragHandler.OnDrag(PointerEventData eventData)
@@ -49,15 +26,10 @@ namespace Kdevaulo.Match3
 
         void IEndDragHandler.OnEndDrag(PointerEventData eventData)
         {
-            if (!_dragStarted || !_initialized || _chipView == null || _gridModel == null)
+            if (!_dragStarted)
                 return;
 
             _dragStarted = false;
-
-            var startCell = _chipView.Cell;
-
-            if (!IsInsideBounds(startCell))
-                return;
 
             var delta = eventData.position - _startScreenPosition;
 
@@ -71,18 +43,7 @@ namespace Kdevaulo.Match3
             else
                 direction = delta.y > 0 ? Vector2Int.up : Vector2Int.down;
 
-            var targetCell = startCell + direction;
-
-            if (!IsInsideBounds(targetCell))
-                return;
-
-            _chipController.Swap(startCell, targetCell);
-        }
-
-        private bool IsInsideBounds(Vector2Int cell)
-        {
-            return cell.x >= 0 && cell.x < _gridModel.Width &&
-                   cell.y >= 0 && cell.y < _gridModel.Height;
+            SwapRequested?.Invoke(this, direction);
         }
     }
 }

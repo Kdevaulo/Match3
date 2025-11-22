@@ -24,7 +24,7 @@ namespace Kdevaulo.Match3
         public Chip GetRandomType()
         {
             if (_chips == null || _chips.Length == 0)
-                return Chip.None;
+                throw new ArgumentException();
 
             var index = Random.Range(0, _chips.Length);
             return _chips[index].Type;

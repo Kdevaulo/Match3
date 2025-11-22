@@ -46,11 +46,6 @@ namespace Kdevaulo.Match3
             _dirtyColumns[x] = true;
         }
 
-        public bool IsDirty(int x, int y)
-        {
-            return _dirtyCells[x, y];
-        }
-
         public void ClearDirty()
         {
             Array.Clear(_dirtyCells, 0, _dirtyCells.Length);

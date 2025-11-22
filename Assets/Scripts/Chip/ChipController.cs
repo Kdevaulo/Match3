@@ -170,7 +170,82 @@ namespace Kdevaulo.Match3
             CalculateGridGeometry(out cellSize, out startX, out startY);
         }
 
-        public void Swap(Vector2Int a, Vector2Int b)
+        private void CreateChipView(int x, int y, float cellSize, Vector2 position)
+        {
+            var chip = Object.Instantiate(_chipsSettings.ChipViewPrefab, _chipsContainer);
+            _chipViewCollection[x, y] = chip;
+
+            var rt = chip.RectTransform;
+            rt.sizeDelta = new Vector2(cellSize, cellSize);
+            rt.anchoredPosition = position;
+
+            var type = _chipsSettings.GetRandomType();
+            _gridModel.SetChip(x, y, type);
+
+            var sprite = _chipsSettings.GetSprite(type);
+            chip.SetSprite(sprite);
+
+            var input = chip.Input;
+
+            if (input != null)
+            {
+                input.SwapRequested += OnSwapRequested;
+            }
+        }
+
+        private void OnSwapRequested(ChipInput input, Vector2Int direction)
+        {
+            if (!TryGetCell(input, out var startCell))
+                return;
+
+            var width = _gridModel.Width;
+            var height = _gridModel.Height;
+
+            if (startCell.x < 0 || startCell.x >= width ||
+                startCell.y < 0 || startCell.y >= height)
+                return;
+
+            var typeA = _gridModel.GetChip(startCell.x, startCell.y);
+            if (typeA == Chip.None)
+                return;
+
+            var targetCell = startCell + direction;
+
+            if (targetCell.x < 0 || targetCell.x >= width ||
+                targetCell.y < 0 || targetCell.y >= height)
+                return;
+
+            var typeB = _gridModel.GetChip(targetCell.x, targetCell.y);
+            if (typeA == typeB)
+                return;
+
+            Swap(startCell, targetCell);
+        }
+
+        private bool TryGetCell(ChipInput input, out Vector2Int cell)
+        {
+            var width = _gridModel.Width;
+            var height = _gridModel.Height;
+
+            for (var x = 0; x < width; x++)
+            {
+                for (var y = 0; y < height; y++)
+                {
+                    var view = _chipViewCollection[x, y];
+
+                    if (view != null && view.Input == input)
+                    {
+                        cell = new Vector2Int(x, y);
+                        return true;
+                    }
+                }
+            }
+
+            cell = default;
+            return false;
+        }
+
+        private void Swap(Vector2Int a, Vector2Int b)
         {
             if (a == b)
                 return;
@@ -187,13 +262,11 @@ namespace Kdevaulo.Match3
 
             if (viewA != null)
             {
-                viewA.SetCell(b);
                 MoveChipToCell(viewA.RectTransform, startX, cellSize, startY, b.x, b.y);
             }
 
             if (viewB != null)
             {
-                viewB.SetCell(a);
                 MoveChipToCell(viewB.RectTransform, startX, cellSize, startY, a.x, a.y);
             }
         }
@@ -225,34 +298,8 @@ namespace Kdevaulo.Match3
 
                 if (view != null)
                 {
-                    view.SetCell(new Vector2Int(x, targetY));
                     MoveChipDown(view.RectTransform, startX, x, cellSize, startY, targetY);
                 }
-            }
-        }
-
-        private void CreateChipView(int x, int y, float cellSize, Vector2 position)
-        {
-            var chip = Object.Instantiate(_chipsSettings.ChipViewPrefab, _chipsContainer);
-            _chipViewCollection[x, y] = chip;
-
-            var rt = chip.RectTransform;
-            rt.sizeDelta = new Vector2(cellSize, cellSize);
-            rt.anchoredPosition = position;
-
-            chip.SetCell(new Vector2Int(x, y));
-
-            var type = _chipsSettings.GetRandomType();
-            _gridModel.SetChip(x, y, type);
-
-            var sprite = _chipsSettings.GetSprite(type);
-            chip.SetSprite(sprite);
-
-            var input = chip.Input;
-
-            if (input != null)
-            {
-                input.Initialize(this, _gridModel);
             }
         }
 
