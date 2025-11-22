@@ -35,13 +35,8 @@ namespace Kdevaulo.Match3
         public void SpawnGrid()
         {
             var gridSize = _gridSettings.GridSize;
-            var cellSize = _gridSettings.CellSize;
 
-            var totalWidth = gridSize.x * cellSize;
-            var totalHeight = gridSize.y * cellSize;
-
-            var startX = -totalWidth * 0.5f + cellSize * 0.5f;
-            var startY = -totalHeight * 0.5f + cellSize * 0.5f;
+            CalculateGridGeometry(out var cellSize, out var startX, out var startY);
 
             for (var x = 0; x < gridSize.x; x++)
             {
@@ -123,28 +118,13 @@ namespace Kdevaulo.Match3
                 var x = spawn.X;
                 var y = spawn.Y;
 
-                var chip = Object.Instantiate(_chipsSettings.ChipViewPrefab, _chipsContainer);
-                _chipViewCollection[x, y] = chip;
-
-                var rt = chip.RectTransform;
-                rt.sizeDelta = new Vector2(cellSize, cellSize);
-
                 var aboveRow = _gridSettings.GridSize.y + 1 + spawn.OrderFromTop;
 
-                rt.anchoredPosition = new Vector2(
+                var position = new Vector2(
                     CalculatePosition(startX, x, cellSize),
                     CalculatePosition(startY, aboveRow, cellSize));
 
-                var sprite = _chipsSettings.GetSprite(spawn.Type);
-                chip.SetSprite(sprite);
-
-                var input = chip.Input;
-
-                if (input != null)
-                {
-                    input.Initialize(_inputBlocker);
-                    input.SwapRequested += OnSwapRequested;
-                }
+                CreateChipViewVisual(x, y, cellSize, position, spawn.Type);
 
                 _spawnedCells.Add(new Vector2Int(x, y));
             }
@@ -175,15 +155,20 @@ namespace Kdevaulo.Match3
 
         private void CreateChipView(int x, int y, float cellSize, Vector2 position)
         {
+            var type = _chipsSettings.GetRandomType();
+            _gridModel.SetChip(x, y, type);
+
+            CreateChipViewVisual(x, y, cellSize, position, type);
+        }
+
+        private void CreateChipViewVisual(int x, int y, float cellSize, Vector2 position, Chip type)
+        {
             var chip = Object.Instantiate(_chipsSettings.ChipViewPrefab, _chipsContainer);
             _chipViewCollection[x, y] = chip;
 
             var rt = chip.RectTransform;
             rt.sizeDelta = new Vector2(cellSize, cellSize);
             rt.anchoredPosition = position;
-
-            var type = _chipsSettings.GetRandomType();
-            _gridModel.SetChip(x, y, type);
 
             var sprite = _chipsSettings.GetSprite(type);
             chip.SetSprite(sprite);
