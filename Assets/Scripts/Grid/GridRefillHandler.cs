@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Kdevaulo.Match3
 {
@@ -37,13 +36,13 @@ namespace Kdevaulo.Match3
 
     public class GridRefillHandler
     {
+        private readonly ChipSettings _chipSettings;
         private readonly GridModel _gridModel;
-        private readonly Func<Chip> _chipGenerator;
 
-        public GridRefillHandler(GridModel gridModel, Func<Chip> chipGenerator)
+        public GridRefillHandler(GridModel gridModel, ChipSettings chipSettings)
         {
             _gridModel = gridModel;
-            _chipGenerator = chipGenerator;
+            _chipSettings = chipSettings;
         }
 
         public List<MoveParams> ApplyGravity()
@@ -101,7 +100,7 @@ namespace Kdevaulo.Match3
                 for (var i = 0; i < emptyCount; i++)
                 {
                     var y = height - emptyCount + i;
-                    var type = _chipGenerator();
+                    var type = _chipSettings.GetRandomType();
 
                     _gridModel.SetChip(x, y, type);
 

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 
 using UnityEngine;
 
@@ -10,32 +11,54 @@ namespace Kdevaulo.Match3
         private readonly MatchFinder _matchFinder;
         private readonly GridModel _gridModel;
         private readonly GridRefillHandler _gridRefillHandler;
+        private readonly GameEventBus _eventBus;
 
         private readonly WaitForSeconds _delay;
 
+        private bool _playerMoveRequested;
+
         public GameLoop(GridModel gridModel, MatchFinder matchFinder, ChipController chipController,
-            GridRefillHandler gridRefillHandler)
+            GridRefillHandler gridRefillHandler, GameEventBus eventBus)
         {
             _gridRefillHandler = gridRefillHandler;
             _chipController = chipController;
             _matchFinder = matchFinder;
             _gridModel = gridModel;
+            _eventBus = eventBus;
 
             _delay = new WaitForSeconds(0.5f);
+
+            _eventBus.PlayerSwapPerformed += OnPlayerSwapPerformed;
         }
 
         public IEnumerator HandleGameLoop()
         {
             _chipController.SpawnGrid();
 
-            yield return HandleInitialMatches();
+            yield return HandleMatches(false);
+
+            while (true)
+            {
+                if (_playerMoveRequested)
+                {
+                    _playerMoveRequested = false;
+                    yield return HandleMatches(true);
+                }
+
+                yield return null;
+            }
         }
 
-        private IEnumerator HandleInitialMatches()
+        private void OnPlayerSwapPerformed(PlayerSwapPerformedEvent evt)
+        {
+            _playerMoveRequested = true;
+        }
+
+        private IEnumerator HandleMatches(bool checkDirtyOnly)
         {
             while (true)
             {
-                var matches = _matchFinder.FindMatches(true); // change to optimize calculation
+                var matches = _matchFinder.FindMatches(checkDirtyOnly);
 
                 _gridModel.ClearDirty();
 

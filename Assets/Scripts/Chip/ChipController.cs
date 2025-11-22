@@ -2,6 +2,8 @@
 
 using UnityEngine;
 
+using Object = UnityEngine.Object;
+
 namespace Kdevaulo.Match3
 {
     public class ChipController
@@ -10,17 +12,19 @@ namespace Kdevaulo.Match3
         private readonly GridSettings _gridSettings;
         private readonly ChipSettings _chipsSettings;
         private readonly GridModel _gridModel;
+        private readonly GameEventBus _eventBus;
 
         private readonly ChipView[,] _chipViewCollection;
         private readonly List<Vector2Int> _spawnedCells = new List<Vector2Int>();
 
         public ChipController(RectTransform chipsContainer, GridSettings gridSettings, ChipSettings chipsSettings,
-            GridModel gridModel)
+            GridModel gridModel, GameEventBus eventBus)
         {
             _chipsContainer = chipsContainer;
             _chipsSettings = chipsSettings;
             _gridSettings = gridSettings;
             _gridModel = gridModel;
+            _eventBus = eventBus;
 
             var gridSize = _gridSettings.GridSize;
             _chipViewCollection = new ChipView[gridSize.x, gridSize.y];
@@ -265,6 +269,8 @@ namespace Kdevaulo.Match3
             {
                 MoveChipToCell(viewB.RectTransform, startX, cellSize, startY, a.x, a.y);
             }
+
+            _eventBus?.Publish(new PlayerSwapPerformedEvent(a, b));
         }
 
         private void CalculateGridGeometry(out float cellSize, out float startX, out float startY)
