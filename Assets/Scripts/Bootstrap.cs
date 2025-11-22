@@ -12,6 +12,7 @@ namespace Kdevaulo.Match3
         private MatchFinder _matchFinder;
         private GridModel _gridModel;
         private GameLoop _gameLoop;
+        private GridRefillHandler _gridRefillHandler;
 
         private void Awake()
         {
@@ -19,7 +20,8 @@ namespace Kdevaulo.Match3
 
             _chipController = new ChipController(_chipsContainer, _gridSettings, _chipSettings, _gridModel);
             _matchFinder = new MatchFinder(_gridModel);
-            _gameLoop = new GameLoop(_gridModel, _matchFinder, _chipController);
+            _gridRefillHandler = new GridRefillHandler(_gridModel, () => _chipSettings.GetRandomType());
+            _gameLoop = new GameLoop(_gridModel, _matchFinder, _chipController, _gridRefillHandler);
         }
 
         private void Start()

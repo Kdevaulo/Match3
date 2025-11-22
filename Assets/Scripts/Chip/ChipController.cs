@@ -82,58 +82,64 @@ namespace Kdevaulo.Match3
             }
         }
 
-        public void ApplyGravity()
+        public void MoveByGravity(List<MoveParams> moveParams)
         {
-            GetGridGeometry(out var width, out var height, out var cellSize, out var startX, out var startY);
+            if (moveParams == null || moveParams.Count == 0)
+                return;
 
-            for (var x = 0; x < width; x++)
+            CalculateGridGeometry(out var cellSize, out var startX, out var startY);
+
+            foreach (var move in moveParams)
             {
-                var targetY = 0;
+                var view = _chipViewCollection[move.FromX, move.FromY];
 
-                for (var y = 0; y < height; y++)
+                _chipViewCollection[move.ToX, move.ToY] = view;
+                _chipViewCollection[move.FromX, move.FromY] = null;
+
+                if (view != null)
                 {
-                    var type = _gridModel.GetChip(x, y);
-
-                    if (type == Chip.None)
-                        continue;
-
-                    MoveChip(x, y, startX, startY, targetY, type, cellSize);
-
-                    targetY++;
+                    MoveChipToCell(view.RectTransform, startX, cellSize, startY, move.ToX, move.ToY);
                 }
             }
         }
 
-        public void SpawnMissingChipsAboveGrid()
+        public void SpawnMissingChipsAboveGrid(List<SpawnParams> spawns)
         {
             _spawnedCells.Clear();
 
-            GetGridGeometry(out var width, out var height, out var cellSize, out var startX, out var startY);
+            if (spawns == null || spawns.Count == 0)
+                return;
 
-            for (var x = 0; x < width; x++)
+            CalculateGridGeometry(out var cellSize, out var startX, out var startY);
+
+            foreach (var spawn in spawns)
             {
-                var emptyCount = 0;
+                var x = spawn.X;
+                var y = spawn.Y;
 
-                for (var y = height - 1; y >= 0; y--)
+                var chip = Object.Instantiate(_chipsSettings.ChipViewPrefab, _chipsContainer);
+                _chipViewCollection[x, y] = chip;
+
+                var rt = chip.RectTransform;
+                rt.sizeDelta = new Vector2(cellSize, cellSize);
+
+                var aboveRow = _gridSettings.GridSize.y + 1 + spawn.OrderFromTop;
+
+                rt.anchoredPosition = new Vector2(
+                    CalculatePosition(startX, x, cellSize),
+                    CalculatePosition(startY, aboveRow, cellSize));
+
+                var sprite = _chipsSettings.GetSprite(spawn.Type);
+                chip.SetSprite(sprite);
+
+                var input = chip.Input;
+
+                if (input != null)
                 {
-                    if (_gridModel.GetChip(x, y) == Chip.None)
-                        emptyCount++;
-                    else
-                        break;
+                    input.SwapRequested += OnSwapRequested;
                 }
 
-                for (var i = 0; i < emptyCount; i++)
-                {
-                    var y = height - emptyCount + i;
-
-                    var position = new Vector2(
-                        CalculatePosition(startX, x, cellSize),
-                        CalculatePosition(startY, height + 1 + i, cellSize));
-
-                    CreateChipView(x, y, cellSize, position);
-
-                    _spawnedCells.Add(new Vector2Int(x, y));
-                }
+                _spawnedCells.Add(new Vector2Int(x, y));
             }
         }
 
@@ -158,16 +164,6 @@ namespace Kdevaulo.Match3
             }
 
             _spawnedCells.Clear();
-        }
-
-        private void GetGridGeometry(out int width, out int height, out float cellSize,
-            out float startX, out float startY)
-        {
-            var gridSize = _gridSettings.GridSize;
-            width = gridSize.x;
-            height = gridSize.y;
-
-            CalculateGridGeometry(out cellSize, out startX, out startY);
         }
 
         private void CreateChipView(int x, int y, float cellSize, Vector2 position)
@@ -271,8 +267,7 @@ namespace Kdevaulo.Match3
             }
         }
 
-        private void CalculateGridGeometry(out float cellSize,
-            out float startX, out float startY)
+        private void CalculateGridGeometry(out float cellSize, out float startX, out float startY)
         {
             var gridSize = _gridSettings.GridSize;
             cellSize = _gridSettings.CellSize;
@@ -282,25 +277,6 @@ namespace Kdevaulo.Match3
 
             startX = -totalWidth * 0.5f + cellSize * 0.5f;
             startY = -totalHeight * 0.5f + cellSize * 0.5f;
-        }
-
-        private void MoveChip(int x, int y, float startX, float startY, int targetY, Chip type, float cellSize)
-        {
-            var view = _chipViewCollection[x, y];
-
-            if (y != targetY)
-            {
-                _gridModel.SetChip(x, targetY, type);
-                _gridModel.SetChip(x, y, Chip.None);
-
-                _chipViewCollection[x, targetY] = view;
-                _chipViewCollection[x, y] = null;
-
-                if (view != null)
-                {
-                    MoveChipDown(view.RectTransform, startX, x, cellSize, startY, targetY);
-                }
-            }
         }
 
         private void MoveChipDown(RectTransform rt, float startX, int x, float cellSize, float startY, int targetY)

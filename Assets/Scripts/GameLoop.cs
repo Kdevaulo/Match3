@@ -9,11 +9,14 @@ namespace Kdevaulo.Match3
         private readonly ChipController _chipController;
         private readonly MatchFinder _matchFinder;
         private readonly GridModel _gridModel;
+        private readonly GridRefillHandler _gridRefillHandler;
 
         private readonly WaitForSeconds _delay;
 
-        public GameLoop(GridModel gridModel, MatchFinder matchFinder, ChipController chipController)
+        public GameLoop(GridModel gridModel, MatchFinder matchFinder, ChipController chipController,
+            GridRefillHandler gridRefillHandler)
         {
+            _gridRefillHandler = gridRefillHandler;
             _chipController = chipController;
             _matchFinder = matchFinder;
             _gridModel = gridModel;
@@ -55,11 +58,13 @@ namespace Kdevaulo.Match3
 
                 yield return _delay;
 
-                _chipController.ApplyGravity();
+                var moveParams = _gridRefillHandler.ApplyGravity();
+                _chipController.MoveByGravity(moveParams);
 
                 yield return _delay;
 
-                _chipController.SpawnMissingChipsAboveGrid();
+                var spawns = _gridRefillHandler.SpawnMissingChips();
+                _chipController.SpawnMissingChipsAboveGrid(spawns);
 
                 yield return _delay;
 
