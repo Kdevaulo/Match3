@@ -57,5 +57,16 @@ namespace Kdevaulo.Match3
             Array.Clear(_dirtyRows, 0, _dirtyRows.Length);
             Array.Clear(_dirtyColumns, 0, _dirtyColumns.Length);
         }
+
+        public void SwapChips(int x1, int y1, int x2, int y2)
+        {
+            if (x1 == x2 && y1 == y2)
+                return;
+
+            (_chips[x1, y1], _chips[x2, y2]) = (_chips[x2, y2], _chips[x1, y1]);
+
+            MarkDirty(x1, y1);
+            MarkDirty(x2, y2);
+        }
     }
 }

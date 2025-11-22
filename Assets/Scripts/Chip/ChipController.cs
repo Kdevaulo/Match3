@@ -170,6 +170,34 @@ namespace Kdevaulo.Match3
             CalculateGridGeometry(out cellSize, out startX, out startY);
         }
 
+        public void Swap(Vector2Int a, Vector2Int b)
+        {
+            if (a == b)
+                return;
+
+            _gridModel.SwapChips(a.x, a.y, b.x, b.y);
+
+            var viewA = _chipViewCollection[a.x, a.y];
+            var viewB = _chipViewCollection[b.x, b.y];
+
+            _chipViewCollection[a.x, a.y] = viewB;
+            _chipViewCollection[b.x, b.y] = viewA;
+
+            CalculateGridGeometry(out var cellSize, out var startX, out var startY);
+
+            if (viewA != null)
+            {
+                viewA.SetCell(b);
+                MoveChipToCell(viewA.RectTransform, startX, cellSize, startY, b.x, b.y);
+            }
+
+            if (viewB != null)
+            {
+                viewB.SetCell(a);
+                MoveChipToCell(viewB.RectTransform, startX, cellSize, startY, a.x, a.y);
+            }
+        }
+
         private void CalculateGridGeometry(out float cellSize,
             out float startX, out float startY)
         {
@@ -197,6 +225,7 @@ namespace Kdevaulo.Match3
 
                 if (view != null)
                 {
+                    view.SetCell(new Vector2Int(x, targetY));
                     MoveChipDown(view.RectTransform, startX, x, cellSize, startY, targetY);
                 }
             }
@@ -211,18 +240,32 @@ namespace Kdevaulo.Match3
             rt.sizeDelta = new Vector2(cellSize, cellSize);
             rt.anchoredPosition = position;
 
+            chip.SetCell(new Vector2Int(x, y));
+
             var type = _chipsSettings.GetRandomType();
             _gridModel.SetChip(x, y, type);
 
             var sprite = _chipsSettings.GetSprite(type);
             chip.SetSprite(sprite);
+
+            var input = chip.Input;
+
+            if (input != null)
+            {
+                input.Initialize(this, _gridModel);
+            }
         }
 
         private void MoveChipDown(RectTransform rt, float startX, int x, float cellSize, float startY, int targetY)
         {
+            MoveChipToCell(rt, startX, cellSize, startY, x, targetY);
+        }
+
+        private void MoveChipToCell(RectTransform rt, float startX, float cellSize, float startY, int x, int y)
+        {
             rt.anchoredPosition = new Vector2(
                 CalculatePosition(startX, x, cellSize),
-                CalculatePosition(startY, targetY, cellSize));
+                CalculatePosition(startY, y, cellSize));
         }
 
         private float CalculatePosition(float startPosition, int count, float size)
