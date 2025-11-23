@@ -5,6 +5,7 @@
         None,
         Square,
         Circle,
-        Mark
+        Mark,
+        Transparent
     }
 }

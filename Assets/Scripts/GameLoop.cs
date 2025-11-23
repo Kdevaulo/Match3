@@ -7,11 +7,14 @@ namespace Kdevaulo.Match3
 {
     public class GameLoop
     {
+        private const int MaxReshuffleAttempts = 3;
+
         private readonly GridRefillHandler _gridRefillHandler;
         private readonly ChipController _chipController;
         private readonly InputBlocker _inputBlocker;
         private readonly GameEventBus _eventBus;
         private readonly MatchFinder _matchFinder;
+        private readonly MoveFinder _moveFinder;
         private readonly GridModel _gridModel;
 
         private readonly WaitForSeconds _delay;
@@ -32,6 +35,7 @@ namespace Kdevaulo.Match3
             _gridModel = gridModel;
             _eventBus = eventBus;
 
+            _moveFinder = new MoveFinder(_gridModel, _matchFinder);
             _delay = new WaitForSeconds(0.5f);
 
             _eventBus.PlayerSwapPerformed += OnPlayerSwapPerformed;
@@ -44,13 +48,16 @@ namespace Kdevaulo.Match3
             _chipController.SpawnGrid();
 
             yield return HandleMatches(false);
+            yield return EnsureBoardHasMoves();
 
             while (true)
             {
                 if (_playerMoveRequested)
                 {
                     _playerMoveRequested = false;
+
                     yield return HandleMatches(true);
+                    yield return EnsureBoardHasMoves();
                 }
 
                 yield return null;
@@ -68,6 +75,39 @@ namespace Kdevaulo.Match3
 
             _chipController.ResetCellColors(cells);
             yield return _delay;
+        }
+
+        private IEnumerator EnsureBoardHasMoves()
+        {
+            if (_moveFinder.HasAnyMove())
+            {
+                yield break;
+            }
+
+            _inputBlocker.SetBlocked(true);
+
+            _chipController.HighlightAllCells(Color.red);
+            yield return _delay;
+
+            var attempts = 0;
+
+            while (!_moveFinder.HasAnyMove())
+            {
+                _chipController.ReshuffleGrid();
+                _chipController.HighlightAllCells(Color.white);
+
+                attempts++;
+
+                if (attempts > MaxReshuffleAttempts)
+                {
+                    Debug.LogError("MaxReshuffleAttempts limit reached");
+                    break;
+                }
+
+                yield return HandleMatches(false);
+            }
+
+            _inputBlocker.SetBlocked(false);
         }
 
         private void OnPlayerSwapPerformed(PlayerSwapPerformedEvent evt)

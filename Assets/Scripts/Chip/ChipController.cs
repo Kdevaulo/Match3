@@ -166,6 +166,41 @@ namespace Kdevaulo.Match3
             _spawnedCells.Clear();
         }
 
+        public void ReshuffleGrid()
+        {
+            var width = _gridModel.Width;
+            var height = _gridModel.Height;
+
+            var cells = new List<Vector2Int>(width * height);
+
+            for (var x = 0; x < width; x++)
+            {
+                for (var y = 0; y < height; y++)
+                {
+                    if (_gridModel.GetChip(x, y) != Chip.None)
+                    {
+                        cells.Add(new Vector2Int(x, y));
+                    }
+                }
+            }
+
+            var count = cells.Count;
+            if (count <= 1)
+                return;
+
+            for (var i = count - 1; i > 0; i--)
+            {
+                var j = Random.Range(0, i + 1);
+                if (i == j)
+                    continue;
+
+                var a = cells[i];
+                var b = cells[j];
+
+                SwapWithoutNotify(a, b);
+            }
+        }
+
         private void CreateChipView(int x, int y, float cellSize, Vector2 position)
         {
             var type = _chipsSettings.GetRandomType();
@@ -315,6 +350,44 @@ namespace Kdevaulo.Match3
         private float CalculatePosition(float startPosition, int count, float size)
         {
             return startPosition + count * size;
+        }
+
+        public void HighlightAllCells(Color color)
+        {
+            var width = _gridModel.Width;
+            var height = _gridModel.Height;
+
+            for (var x = 0; x < width; x++)
+            {
+                for (var y = 0; y < height; y++)
+                {
+                    var view = _chipViewCollection[x, y];
+
+                    if (view != null)
+                    {
+                        view.SetColor(color);
+                    }
+                }
+            }
+        }
+
+        public void ResetAllCellColors()
+        {
+            var width = _gridModel.Width;
+            var height = _gridModel.Height;
+
+            for (var x = 0; x < width; x++)
+            {
+                for (var y = 0; y < height; y++)
+                {
+                    var view = _chipViewCollection[x, y];
+
+                    if (view != null)
+                    {
+                        view.SetColor(Color.white);
+                    }
+                }
+            }
         }
     }
 }
