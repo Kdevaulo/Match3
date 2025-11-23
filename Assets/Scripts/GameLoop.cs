@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 
 using UnityEngine;
 
@@ -15,6 +16,10 @@ namespace Kdevaulo.Match3
 
         private readonly WaitForSeconds _delay;
 
+        private Vector2Int _lastSwapFrom;
+        private Vector2Int _lastSwapTo;
+
+        private bool _hasPendingSwap;
         private bool _playerMoveRequested;
 
         public GameLoop(GridModel gridModel, MatchFinder matchFinder, ChipController chipController,
@@ -52,9 +57,26 @@ namespace Kdevaulo.Match3
             }
         }
 
+        private IEnumerator PlayInvalidSwapFeedback()
+        {
+            var cells = new List<Vector2Int>(2) { _lastSwapFrom, _lastSwapTo };
+
+            _chipController.HighlightCells(cells, Color.red);
+            yield return _delay;
+
+            _chipController.SwapWithoutNotify(_lastSwapFrom, _lastSwapTo);
+
+            _chipController.ResetCellColors(cells);
+            yield return _delay;
+        }
+
         private void OnPlayerSwapPerformed(PlayerSwapPerformedEvent evt)
         {
             _playerMoveRequested = true;
+            _hasPendingSwap = true;
+
+            _lastSwapFrom = evt.From;
+            _lastSwapTo = evt.To;
         }
 
         private IEnumerator HandleMatches(bool checkDirtyOnly)
@@ -68,7 +90,17 @@ namespace Kdevaulo.Match3
                 _gridModel.ClearDirty();
 
                 if (matches.Count == 0)
+                {
+                    if (_hasPendingSwap)
+                    {
+                        yield return PlayInvalidSwapFeedback();
+                        _hasPendingSwap = false;
+                    }
+
                     break;
+                }
+
+                _hasPendingSwap = false;
 
                 yield return _delay;
 

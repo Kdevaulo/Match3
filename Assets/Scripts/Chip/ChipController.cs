@@ -64,6 +64,19 @@ namespace Kdevaulo.Match3
             }
         }
 
+        public void ResetCellColors(IReadOnlyList<Vector2Int> cells)
+        {
+            foreach (var cell in cells)
+            {
+                var view = _chipViewCollection[cell.x, cell.y];
+
+                if (view != null)
+                {
+                    view.SetColor(Color.white);
+                }
+            }
+        }
+
         public void ClearCells(IReadOnlyList<Vector2Int> cells)
         {
             foreach (var cell in cells)
@@ -236,6 +249,16 @@ namespace Kdevaulo.Match3
 
         private void Swap(Vector2Int a, Vector2Int b)
         {
+            SwapInternal(a, b, true);
+        }
+
+        public void SwapWithoutNotify(Vector2Int a, Vector2Int b)
+        {
+            SwapInternal(a, b, false);
+        }
+
+        private void SwapInternal(Vector2Int a, Vector2Int b, bool publishEvent)
+        {
             if (a == b)
                 return;
 
@@ -259,7 +282,10 @@ namespace Kdevaulo.Match3
                 MoveChipToCell(viewB.RectTransform, startX, cellSize, startY, a.x, a.y);
             }
 
-            _eventBus?.Publish(new PlayerSwapPerformedEvent(a, b));
+            if (publishEvent)
+            {
+                _eventBus?.Publish(new PlayerSwapPerformedEvent(a, b));
+            }
         }
 
         private void CalculateGridGeometry(out float cellSize, out float startX, out float startY)
