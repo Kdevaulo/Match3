@@ -15,10 +15,14 @@ MonoBehaviour:
   <ChipViewPrefab>k__BackingField: {fileID: 2841052780759813470, guid: 93df0ffe8fa29994b909fe4bd6ff0720, type: 3}
   _chips:
   - Type: 1
-    Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+    Sprite: {fileID: -1443523178, guid: 95bf81913612c2d429a7d3644fbbe238, type: 3}
   - Type: 2
-    Sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    Sprite: {fileID: 156151513, guid: 95bf81913612c2d429a7d3644fbbe238, type: 3}
   - Type: 3
-    Sprite: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
+    Sprite: {fileID: -1660583984, guid: 95bf81913612c2d429a7d3644fbbe238, type: 3}
   - Type: 4
-    Sprite: {fileID: 10917, guid: 0000000000000000f000000000000000, type: 0}
+    Sprite: {fileID: -1648941517, guid: 95bf81913612c2d429a7d3644fbbe238, type: 3}
+  - Type: 5
+    Sprite: {fileID: -941543151, guid: 95bf81913612c2d429a7d3644fbbe238, type: 3}
+  - Type: 6
+    Sprite: {fileID: 442662562, guid: 95bf81913612c2d429a7d3644fbbe238, type: 3}

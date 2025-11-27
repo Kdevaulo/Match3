@@ -3,9 +3,11 @@
     public enum Chip
     {
         None,
-        Square,
         Circle,
-        Mark,
-        Transparent
+        Star,
+        Leaf,
+        Heart,
+        Blob,
+        Hexagon
     }
 }
