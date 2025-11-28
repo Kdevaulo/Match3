@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 708e420884024052b516b98de2b01d37, type: 3}
+  m_Name: BackgroundAnimationSettings
+  m_EditorClassIdentifier: 
+  <HorizontalMoves>k__BackingField:
+  - Key: Waves
+    Speed: 0.001
+    PositionY: -1500
+    PositionRange: {x: -1300, y: 1300}
+  <ScaleAnimations>k__BackingField:
+  - Key: Background
+    Speed: 0.1
+    ScaleRange: {x: 1, y: 1.1}
+  - Key: Circle
+    Speed: 0.05
+    ScaleRange: {x: 0.9, y: 1}
+  <RotationAnimations>k__BackingField:
+  - Key: Circle
+    Speed: -1
+  - Key: Rune
+    Speed: 1

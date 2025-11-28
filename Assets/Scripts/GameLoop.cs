@@ -12,7 +12,6 @@ namespace Kdevaulo.Match3
         private readonly GridRefillHandler _gridRefillHandler;
         private readonly ChipController _chipController;
         private readonly InputBlocker _inputBlocker;
-        private readonly GameEventBus _eventBus;
         private readonly MatchFinder _matchFinder;
         private readonly MoveFinder _moveFinder;
         private readonly GridModel _gridModel;
@@ -25,20 +24,22 @@ namespace Kdevaulo.Match3
         private bool _hasPendingSwap;
         private bool _playerMoveRequested;
 
-        public GameLoop(GridModel gridModel, MatchFinder matchFinder, ChipController chipController,
-            GridRefillHandler gridRefillHandler, GameEventBus eventBus, InputBlocker inputBlocker)
+        public GameLoop(ChipSettings chipSettings, GridSettings gridSettings, RectTransform chipsContainer)
         {
-            _gridRefillHandler = gridRefillHandler;
-            _chipController = chipController;
-            _inputBlocker = inputBlocker;
-            _matchFinder = matchFinder;
-            _gridModel = gridModel;
-            _eventBus = eventBus;
+            var eventBus = new GameEventBus();
+            _gridModel = new GridModel(gridSettings.GridSize);
 
+            _gridRefillHandler = new GridRefillHandler(_gridModel, chipSettings);
+            _inputBlocker = new InputBlocker();
+            _matchFinder = new MatchFinder(_gridModel);
             _moveFinder = new MoveFinder(_gridModel, _matchFinder);
+
+            _chipController = new ChipController(chipsContainer, gridSettings, chipSettings, _gridModel, eventBus,
+                _inputBlocker);
+
             _delay = new WaitForSeconds(0.5f);
 
-            _eventBus.PlayerSwapPerformed += OnPlayerSwapPerformed;
+            eventBus.PlayerSwapPerformed += OnPlayerSwapPerformed;
         }
 
         public IEnumerator HandleGameLoop()
