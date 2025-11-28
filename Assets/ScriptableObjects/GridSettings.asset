@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: GridSettings
   m_EditorClassIdentifier: 
   <CellSize>k__BackingField: 200
-  <GridSize>k__BackingField: {x: 6, y: 5}
+  <GridSize>k__BackingField: {x: 5, y: 7}
