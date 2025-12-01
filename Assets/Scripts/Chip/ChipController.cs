@@ -64,19 +64,6 @@ namespace Kdevaulo.Match3
             }
         }
 
-        public void ResetCellColors(IReadOnlyList<Vector2Int> cells)
-        {
-            foreach (var cell in cells)
-            {
-                var view = _chipViewCollection[cell.x, cell.y];
-
-                if (view != null)
-                {
-                    view.SetColor(Color.white);
-                }
-            }
-        }
-
         public void ClearCells(IReadOnlyList<Vector2Int> cells)
         {
             foreach (var cell in cells)
@@ -352,7 +339,7 @@ namespace Kdevaulo.Match3
             return startPosition + count * size;
         }
 
-        public void HighlightAllCells(Color color)
+        public void ColorAllCells(Color color)
         {
             var width = _gridModel.Width;
             var height = _gridModel.Height;
@@ -366,25 +353,6 @@ namespace Kdevaulo.Match3
                     if (view != null)
                     {
                         view.SetColor(color);
-                    }
-                }
-            }
-        }
-
-        public void ResetAllCellColors()
-        {
-            var width = _gridModel.Width;
-            var height = _gridModel.Height;
-
-            for (var x = 0; x < width; x++)
-            {
-                for (var y = 0; y < height; y++)
-                {
-                    var view = _chipViewCollection[x, y];
-
-                    if (view != null)
-                    {
-                        view.SetColor(Color.white);
                     }
                 }
             }

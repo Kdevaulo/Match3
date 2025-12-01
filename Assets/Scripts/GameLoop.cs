@@ -37,7 +37,7 @@ namespace Kdevaulo.Match3
             _chipController = new ChipController(chipsContainer, gridSettings, chipSettings, _gridModel, eventBus,
                 _inputBlocker);
 
-            _delay = new WaitForSeconds(0.5f);
+            _delay = new WaitForSeconds(0.1f);
 
             eventBus.PlayerSwapPerformed += OnPlayerSwapPerformed;
         }
@@ -69,12 +69,12 @@ namespace Kdevaulo.Match3
         {
             var cells = new List<Vector2Int>(2) { _lastSwapFrom, _lastSwapTo };
 
-            _chipController.HighlightCells(cells, Color.red);
+            _chipController.HighlightCells(cells, ChipColors.WrongColor);
             yield return _delay;
 
             _chipController.SwapWithoutNotify(_lastSwapFrom, _lastSwapTo);
 
-            _chipController.ResetCellColors(cells);
+            _chipController.HighlightCells(cells, ChipColors.OrdinaryColor);
             yield return _delay;
         }
 
@@ -87,7 +87,7 @@ namespace Kdevaulo.Match3
 
             _inputBlocker.SetBlocked(true);
 
-            _chipController.HighlightAllCells(Color.red);
+            _chipController.ColorAllCells(ChipColors.WrongColor);
             yield return _delay;
 
             var attempts = 0;
@@ -95,7 +95,7 @@ namespace Kdevaulo.Match3
             while (!_moveFinder.HasAnyMove())
             {
                 _chipController.ReshuffleGrid();
-                _chipController.HighlightAllCells(Color.white);
+                _chipController.ColorAllCells(ChipColors.OrdinaryColor);
 
                 attempts++;
 
@@ -147,7 +147,7 @@ namespace Kdevaulo.Match3
 
                 foreach (var cluster in matches)
                 {
-                    _chipController.HighlightCells(cluster.Cells, Color.green);
+                    _chipController.HighlightCells(cluster.Cells, ChipColors.CorrectColor);
                 }
 
                 yield return _delay;

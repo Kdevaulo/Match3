@@ -7,6 +7,7 @@ namespace Kdevaulo.Match3
     {
         [field: SerializeField] public ChipInput Input { get; private set; }
         [field: SerializeField] public RectTransform RectTransform { get; private set; }
+        [SerializeField] private Image _background;
         [SerializeField] private Image _icon;
 
         public void SetSprite(Sprite sprite)
@@ -16,7 +17,7 @@ namespace Kdevaulo.Match3
 
         public void SetColor(Color color)
         {
-            _icon.color = color;
+            _background.color = color;
         }
     }
 }
